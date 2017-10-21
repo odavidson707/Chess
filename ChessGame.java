@@ -3,11 +3,14 @@ package chess;
 import java.util.Scanner;
 import java.lang.*;
 import java.util.ArrayList;
+import javax.swing.*;
+import java.awt.event.*;
+import java.awt.*;
 
 
 
 
-public class ChessGame {
+public class ChessGame extends JFrame{
 	public Piece [][] board = new Piece [8][8];
 	private Piece [] white = new Piece [16];
 	private Piece [] black = new Piece [16];
@@ -123,6 +126,27 @@ public class ChessGame {
 		}
 
 
+            //FRAME
+    JFrame frame = new JFrame ("Test");
+    frame.setSize(500,500);
+    frame.setResizable(false);
+    //
+
+    //TEXT AREA
+    JTextArea textArea = new JTextArea("TEST");
+    textArea.setSize(400,400);
+
+    textArea.setLineWrap(true);
+    textArea.setEditable(false);
+    textArea.setVisible(true);
+
+    JScrollPane scroll = new JScrollPane (textArea);
+    scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+          scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+
+    frame.add(scroll);
+    frame.setVisible(true);
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		boolean repeat = false;
 		System.out.println("Welcome to chess.");
 		System.out.println("If you would like to play against the AI, please enter '1'.  Otherwise, enter '0'");
@@ -875,4 +899,12 @@ public class ChessGame {
 
 		board [pos.get(0)][pos.get(1)].setTimesMoved(board [pos.get(0)][pos.get(1)].getTimesMoved() - 1);
 	}
+
+	public static void main(String[] args)
+    {
+        ChessGame chessGame = new ChessGame();
+        //System.out.println("Well I guess that worked.");
+    }
+
 }
+
