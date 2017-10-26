@@ -245,7 +245,7 @@ public class ChessGame extends JFrame{
 
                         CPU = true;
                         textArea.append("The AI does not work.  You can give it a shot, but it just deletes all the white pieces for some reason.  ");
-                        textArea.append("If you want to take a look at the code that should drive the AI, see methods 'hypothesize' and 'assessBoard'  ");
+                        textArea.append("If you want to take a look at the code that should drive the AI, see methods 'hypothesize' and 'assessBoard' in my GitHub https://github.com/odavidson707/Chess  ");
                         textArea.append("Otherwise, feel free to play a game of chess against yourself.  That bit works.  ");
                         textArea.append("What follows is the faulty AI.  To play against yourself, close and then restart.\n");
                     }
