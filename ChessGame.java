@@ -11,13 +11,36 @@ import java.awt.*;
 
 
 public class ChessGame extends JFrame{
+
 	public Piece [][] board = new Piece [8][8];
 	private Piece [] white = new Piece [16];
 	private Piece [] black = new Piece [16];
 	private Scanner input = new Scanner (System.in);
 	private char toPlay = 'W';
 	private boolean CPU = false;
+	private boolean askAI = true;
+	private boolean repeatCoord1 = true;
+	private boolean repeatCoord2 = false;
+	private ArrayList<Integer> startPos = new ArrayList<Integer>();
+    private ArrayList<Integer> endPos = new ArrayList<Integer>();
+    private boolean end =false;
+
+	public int stage = 0;
 	//private int movesMade = 2;
+
+	private JLabel entryL;
+
+    private JTextField entryTF;
+    private JButton enterB;
+    private JTextArea textArea;
+
+    private JScrollPane scroll;
+
+    //Button handlers
+    private EnterButtonHandler ebHandler;
+
+    private static final int WIDTH = 800;
+    private static final int HEIGHT = 600;
 
 	public ChessGame ()
 	{
@@ -126,208 +149,280 @@ public class ChessGame extends JFrame{
 		}
 
 
-            //FRAME
-    JFrame frame = new JFrame ("Test");
-    frame.setSize(500,500);
-    frame.setResizable(false);
+            //PANE
+
     //
 
     //TEXT AREA
-    JTextArea textArea = new JTextArea("TEST");
-    textArea.setSize(400,400);
-
+    textArea = new JTextArea("TEST");
+    //textArea.setSize(800,500);
     textArea.setLineWrap(true);
     textArea.setEditable(false);
     textArea.setVisible(true);
+    textArea.setText("Welcome to chess.\n If you would like to play against the AI, please enter '1'.  Otherwise, enter '0'\n");
 
-    JScrollPane scroll = new JScrollPane (textArea);
+    //The text field for entering coordinates etc
+    entryTF = new JTextField(10);
+    //entryTF.setSize(400, 100);
+    entryTF.setEditable(true);
+    entryTF.setVisible(true);
+
+    entryL = new JLabel("Enter coordinates here:");
+    //entryL.setSize (400,100);
+
+    enterB = new JButton ("Enter");
+    ebHandler = new EnterButtonHandler();
+    enterB.addActionListener(ebHandler);
+    //enterB.setSize (100,500);
+    enterB.setVisible(true);
+
+
+    scroll = new JScrollPane (textArea);
     scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
           scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
-    frame.add(scroll);
-    frame.setVisible(true);
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		boolean repeat = false;
-		System.out.println("Welcome to chess.");
-		System.out.println("If you would like to play against the AI, please enter '1'.  Otherwise, enter '0'");
-		int choice = input.nextInt();
-		do
-		{
-			repeat = false;
-			if (choice == 1)
-			{
-				CPU = true;
-				System.out.println("The AI does not work.  You can give it a shot, but it just deletes all the white pieces for some reason.");
-				System.out.println("If you want to take a look at the code that should drive the AI, see methods 'hypothesize' and 'assessBoard'");
-				System.out.println("Otherwise, feel free to play a game of chess against yourself.  That bit works.");
-				System.out.println("What follows is the faulty AI.  To play against yourself, press Q and then restart.\n");
-			}
-			else if (choice != 0)
-			{
-				repeat = true;
-				System.out.println("Please enter a valid choice.");
-			}
-		}while (repeat == true);
-		while (end == false)
-		{
-			if(stalemate())
-			{
-				end = true;
-				outBoard();
-				if (check())
-				{
-					System.out.println("Checkmate!  You lose!  Good day, sir!");
-				}
-				else
-					System.out.println("Stalemate!  The game is a draw.");
-			}
+    setTitle("Chess");
+    Container pane = getContentPane();
+    pane.setLayout(new GridBagLayout());
+    GridBagConstraints c = new GridBagConstraints();
+    GridBagConstraints c1 = new GridBagConstraints();
+    GridBagConstraints c2 = new GridBagConstraints();
+    GridBagConstraints c3 = new GridBagConstraints();
 
-			else
-			{
-			outToPlay();
-			outBoard();
-			if (CPU)
-			{
-				if (toPlay == 'W')
-				{
-					System.out.println ("Enter the coordinates of the piece you want to move.");
-					ArrayList<Integer> startPos = new ArrayList<Integer>();
-					ArrayList<Integer> endPos = new ArrayList<Integer>();
-					boolean legal = false;
-					do
-					{
-					    String coord = inCoordinates();
-					    if (coord.equals("Q"))
+    c.gridx= 0;
+    c.gridy= 0;
+    //c.gridheight= 1;
+    c.gridwidth = 5;
+    c.ipady = 40;
+    c.ipadx = 50;
+    c.weighty=1.0;
+    c.weightx=1.0;
+    c.fill = GridBagConstraints.BOTH;
+    pane.add(scroll,c);
+
+    c1.gridx=0;
+    c1.gridy=4;
+    c1.fill = GridBagConstraints.BOTH;
+    pane.add(entryL,c1);
+
+    c2.gridx=1;
+    c2.gridy=4;
+    c2.gridwidth=4;
+    c2.fill = GridBagConstraints.BOTH;
+    pane.add(entryTF,c2);
+
+    c3.gridx=5;
+    c3.gridy=4;
+    c3.gridwidth=1;
+    c3.fill = GridBagConstraints.BOTH;
+    pane.add(enterB,c3);
+
+    setSize(WIDTH, HEIGHT);
+    setVisible(true);
+    setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+    boolean repeat = false;
+	}
+
+	private class EnterButtonHandler implements ActionListener
+    {
+
+
+        public void actionPerformed(ActionEvent e)
+        {
+            if (end)
+            {
+                textArea.append("The game is already over.\n");
+                return;
+            }
+            if (askAI)
+            {
+                if (value.equals("0")||value.equals("1"))
+                {
+                    askAI = false;
+                    int AI=((int)value.charAt(0)-48);
+                    if (AI == 1)
+                    {
+
+                        CPU = true;
+                        textArea.append("The AI does not work.  You can give it a shot, but it just deletes all the white pieces for some reason.  ");
+                        textArea.append("If you want to take a look at the code that should drive the AI, see methods 'hypothesize' and 'assessBoard'  ");
+                        textArea.append("Otherwise, feel free to play a game of chess against yourself.  That bit works.  ");
+                        textArea.append("What follows is the faulty AI.  To play against yourself, close and then restart.\n");
+                    }
+                    outToPlay();
+                    outBoard();
+                    textArea.append("Enter the coordinates of the piece you want to move.\n");
+                }
+                else
+                {
+                    textArea.append("Enter either 0 or 1.\n");
+                }
+                return;
+            }
+            if (CPU && toPlay == 'W' && repeatCoord1)//If they are playing the AI and have yet to enter the first coordinate correctly
+            {
+
+                startPos = coordinateConverter(inCoordinates());
+                if (checkColor(startPos))
+                {
+                    repeatCoord1 = false;
+                    repeatCoord2 = true;
+                    textArea.append("Enter the coordinates of the square you wish to move to\n");
+                }
+                else
+                    textArea.append("Select a square occupied by your color.\n");
+                return;
+            }
+            if (CPU && toPlay == 'W' && repeatCoord2)//if they are playing the AI and have yet to enter second coord correctly
+            {
+                endPos = coordinateConverter(inCoordinates());
+                if (legalMove(startPos,endPos))
+                {
+                    Piece start = executeMove (startPos, endPos);
+                    //this is done to save the Piece in the target square
+                    //in case the move is illegal.
+                    if (check())
+                    {
+                        textArea.append("That move places your king at risk.  Pick another piece to move.\n");
+                        undo (startPos, endPos, start);
+                        textArea.append("Enter the coordinates of the piece you want to move.\n");
+                        repeatCoord2 = false;
+                        repeatCoord1 = true;
+                        return;
+                    }
+                    else
+                    {
+                        endMove();//end the player's turn, then check if the game ended.
+                        if(stalemate())
                         {
-
                             end = true;
-                            System.out.println("Thank you for playing my game.  Have a nice day!");
-                            break;
-                        }
-                        else
-                            startPos = coordinateConverter(coord);
-						if (checkColor(startPos))
-						{
-							System.out.println ("Enter the coordinates of the square you wish to move to.");
-							coord = inCoordinates();
-							if (coord.equals("Q"))
+                            if (check())
                             {
-
-                                end = true;
-                                System.out.println("Thank you for playing my game.  Have a nice day!");
-                                break;
+                                textArea.append("Checkmate!  You beat the AI, congratulations!\n");
                             }
                             else
-                                endPos = coordinateConverter(coord);
-							if (legalMove(startPos,endPos))
-							{
-								legal = true;
-								Piece start = executeMove (startPos, endPos);
-								//this is done to save the Piece in the target square
-								//in case the move is illegal.
-								if (check())
-								{
-									System.out.println("That move places your king at risk.  Pick another piece to move.");
-									undo (startPos, endPos, start);
-								}
-								else
-								{
-									endMove();
-									if (check())
-									{
-										System.out.println("Looks like you're in check.");
-									}
-								}
-								//endMove();
-							}
-							else
-							{
-								System.out.println("Illegal move.  Please choose a piece to move again.  Please note that castling is technically a king move, and cannot be done by moving a rook.");
-								//outBoard();
-							}
-						}
-						else
-						{
-							System.out.println("Select a square occupied by your color.");
-						}
-					}while (!legal);
-
-					}
-				else //it is the CPU's turn
-				{
-					ArrayList <ArrayList <Integer>> move = hypothesize (board);
-					executeMove(move.get(0),move.get(1));
-					endMove();
-				}
-				}
-			else//they don't want CPU
-			{
-					System.out.println ("Enter the coordinates of the piece you want to move.");
-					ArrayList<Integer> startPos = new ArrayList<Integer>();
-					ArrayList<Integer> endPos = new ArrayList<Integer>();
-					boolean legal = false;
-					do
-					{
-					    String coord1 = inCoordinates();
-					    if (coord1.equals("Q"))
-                        {
-
-                            end = true;
-                            System.out.println("Thank you for playing my game.  Have a nice day!");
-                            break;
+                                textArea.append("Stalemate!  The game is a draw.\n");
+                            return;
                         }
-                        else
-                            startPos = coordinateConverter(coord1);
-						if (checkColor(startPos))
-						{
-							System.out.println ("Enter the coordinates of the square you wish to move to.");
-							coord1 = inCoordinates();
-                            if (coord1.equals("Q"))
-                            {
 
-                                end = true;
-                                System.out.println("Thank you for playing my game.  Have a nice day!");
-                                break;
+                        outToPlay();
+                        if (check())
+                        {
+                            textArea.append("Looks like the AI is in check.\n");
+                        }
+                        ArrayList <ArrayList <Integer>> move = hypothesize (board);
+                        executeMove(move.get(0),move.get(1));
+                        outBoard();
+                        endMove();
+
+                        if(stalemate())
+                        {
+                            end = true;
+                            if (check())
+                            {
+                                textArea.append("Checkmate!  You lose!  Good day, sir!\n");
                             }
                             else
-                                endPos = coordinateConverter(coord1);
-							if (legalMove(startPos,endPos))
-							{
-								legal = true;
-								Piece start = executeMove (startPos, endPos);
-								//this is done to save the Piece in the target square
-								//in case the move is illegal.
-								if (check())
-								{
-									System.out.println("That move places your king at risk.  Pick another piece to move.");
-									undo (startPos, endPos, start);
-								}
-								else
-								{
-									endMove();
-									if (check())
-									{
-										System.out.println("Looks like you're in check.");
-									}
-								}
-								//endMove();
-							}
-							else
-							{
-								System.out.println("Illegal move.  Please choose a piece to move again.  Please note that castling is technically a king move, and cannot be done by moving a rook.");
-								//outBoard();
-							}
-						}
-						else
-						{
-							System.out.println("Select a square occupied by your color.");
-						}
-					}while (!legal);
-			}
+                                textArea.append("Stalemate!  The game is a draw.\n");
+                            return;
+                        }
 
-		}
-	}
-	}
+                        outToPlay();
+                        if (check())
+                        {
+                            textArea.append("Looks like you're in check.\n");
+                        }
+                        outBoard();
+
+                        repeatCoord1 = true;//it is now the player's turn again, reset these values.
+                        repeatCoord2 = false;
+                        textArea.append("Enter the coordinates of the piece you want to move.\n");
+                        return;
+                    }
+                    //endMove();
+                }
+                else
+                {
+                    textArea.append("Illegal move.  Please choose a piece to move again.  Please note that castling is technically a king move, and cannot be done by moving a rook.\n");
+                    textArea.append("Enter the coordinates of the piece you want to move.\n");
+                    repeatCoord2 = false;
+                    repeatCoord1 = true;
+                    return;
+                }
+            }
+            if (repeatCoord1)
+            {
+                startPos = coordinateConverter(inCoordinates());
+                if (checkColor(startPos))
+                {
+                    repeatCoord1 = false;
+                    repeatCoord2 = true;
+                    textArea.append("Enter the coordinates of the square you wish to move to\n");
+                }
+                else
+                    textArea.append("Select a square occupied by your color.\n");
+                return;
+            }
+            if (repeatCoord2)
+            {
+                endPos = coordinateConverter(inCoordinates());
+                if (legalMove(startPos,endPos))
+                {
+                    Piece start = executeMove (startPos, endPos);
+                    //this is done to save the Piece in the target square
+                    //in case the move is illegal.
+                    if (check())
+                    {
+                        textArea.append("That move places your king at risk.  Pick another piece to move.\n");
+                        undo (startPos, endPos, start);
+                        textArea.append("Enter the coordinates of the piece you want to move.\n");
+                        repeatCoord2 = false;
+                        repeatCoord1 = true;
+                        return;
+                    }
+                    else
+                    {
+                        endMove();//end the player's turn, then check if the game ended.
+                        if(stalemate())
+                        {
+                            end = true;
+                            outBoard();
+                            if (check())
+                            {
+                                textArea.append("Checkmate!  You lose!  Good day, sir!\n");
+                            }
+                            else
+                                textArea.append("Stalemate!  The game is a draw.\n");
+                            return;
+                        }
+
+                        outToPlay();
+                        if (check())
+                        {
+                            textArea.append("Looks like you're in check.\n");
+                        }
+                        outBoard();
+
+                        repeatCoord1 = true;//it is the next person's turn
+                        repeatCoord2 = false;
+                        textArea.append("Enter the coordinates of the piece you want to move.\n");
+                        return;
+                    }
+                    //endMove();
+                }
+                else
+                {
+                    textArea.append("Illegal move.  Please choose a piece to move again.  Please note that castling is technically a king move, and cannot be done by moving a rook.\n");
+                    textArea.append("Enter the coordinates of the piece you want to move.\n");
+                    repeatCoord2 = false;
+                    repeatCoord1 = true;
+                    return;
+                }
+            }
+
+       }
+    }
 
 	/*
 	 * assessBoard evaluates the board position for the CPU, black, and returns an integer.
@@ -690,8 +785,6 @@ public class ChessGame extends JFrame{
 					for (ArrayList<Integer> possibleMove : i.legalMoves(board))
 					{
 						Piece start = executeMove (pos, possibleMove);
-						outBoard();
-						System.out.println();
 						int temp = 0;
 						for (Piece [] q : board)
 						{
@@ -713,7 +806,7 @@ public class ChessGame extends JFrame{
 						}
 						if (temp > max)
 						{
-							System.out.println("Should be choosing an optimal move.");
+							//System.out.println("Should be choosing an optimal move.");
 							max = temp;
 							if (!move.isEmpty())
 							{
@@ -737,19 +830,15 @@ public class ChessGame extends JFrame{
 		String rtn = "";
 		do
 		{
-		rtn = input.next();
-		if ((rtn.length() == 1 && (int)rtn.charAt(0) != 81) || rtn.length() > 2)//The input string is of improper size
+		rtn = entryTF.getText();
+		if ((rtn.length() == 1) || rtn.length() > 2)//The input string is of improper size
         {
-            System.out.println("Please enter coordinates in the format 'a1'.");
+            textArea.append("Please enter coordinates in the format 'a1'.");
             typo = true;
-        }
-        else if (rtn.equals("Q")) //the input string is Q
-        {
-            typo = false;
         }
 		else if ((((int)rtn.charAt(0) <97 || (int)rtn.charAt(0) > 104)) || (int)rtn.charAt(1) > 56 || (int)rtn.charAt(1) < 49)
 		{
-			System.out.println("Please enter coordinates in the format 'a1'.");
+			textArea.append("Please enter coordinates in the format 'a1'.");
 			typo = true;
 		}
 		else
@@ -778,9 +867,9 @@ public class ChessGame extends JFrame{
 				if (board [i][j].getColor() == 'B')
 					rank = Character.toLowerCase(rank);
 				if (rank != 'S' && rank != 's')
-					System.out.print (rank);
+					textArea.append(Character.toString(rank));
 			}
-			System.out.println();
+			textArea.append("\n");
 		}
 		/*for (int j = 7; j>-1; j--)
 		{
@@ -793,14 +882,13 @@ public class ChessGame extends JFrame{
 
 	}
 
-
 	private void outToPlay ()
 	{
 		if (toPlay == 'W')
-			System.out.print ("White");
+			textArea.append("White");
 		else
-			System.out.print ("Black");
-		System.out.println ( " to play. White pieces are capital letters. Press Q to quit");
+			textArea.append("Black");
+		textArea.append( " to play. White pieces are capital letters. \n");
 	}
 
 	private boolean stalemate ()

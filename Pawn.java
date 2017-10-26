@@ -28,6 +28,7 @@ public class Pawn extends Piece {
         ArrayList <Integer> move7 = new ArrayList<Integer>();
         ArrayList <Integer> move8 = new ArrayList<Integer>();
         ArrayList <Integer> move9 = new ArrayList<Integer>();
+        ArrayList <Integer> temp = new ArrayList <Integer>();
 
         int [] shadowPos = new int [2];
 
@@ -40,9 +41,6 @@ public class Pawn extends Piece {
                     move7.add(position [0]);
                     move7.add(position [1] + 2);
                     moves.add(move7);
-					/*shadowPos [0] = position [0];
-					shadowPos [1] = position [1] + 1;
-					board [position [0]][position [1] + 1] = new ShadowPawn ('S', 'W', shadowPos);*/
                 }
             }
 
@@ -53,6 +51,7 @@ public class Pawn extends Piece {
                     move8.add(position [0] - 1);
                     move8.add(position [1] + 1);
                     moves.add(move8);
+                    temp = new ArrayList <Integer>();
                 }
             }
 
@@ -94,6 +93,7 @@ public class Pawn extends Piece {
                 }
             }
         }
+
         else
         {
             if (position [1] == 6)//en passant/double move is allowed.
@@ -103,9 +103,7 @@ public class Pawn extends Piece {
                     move7.add(position [0]);
                     move7.add(position [1] - 2);
                     moves.add(move7);
-					/*shadowPos [0] = position [0];
-					shadowPos [1] = position [1] - 1;
-					board [position [0]][position [1] - 1] = new ShadowPawn ('S', 'B', shadowPos);*/
+
                 }
             }
 

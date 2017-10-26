@@ -145,6 +145,7 @@ public class Bishop extends Piece {
         }
         potentialMove [0] = position [0];
         potentialMove [1] = position [1];
+
         return moves;
     }
 }
