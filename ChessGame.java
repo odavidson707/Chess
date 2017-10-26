@@ -1,4 +1,4 @@
-package chess;
+//package chess;
 
 import java.util.Scanner;
 import java.lang.*;
@@ -226,10 +226,9 @@ public class ChessGame extends JFrame{
 
 	private class EnterButtonHandler implements ActionListener
     {
-
-
         public void actionPerformed(ActionEvent e)
         {
+            String value = entryTF.getText();
             if (end)
             {
                 textArea.append("The game is already over.\n");
